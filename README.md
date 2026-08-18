@@ -9,6 +9,8 @@ Panel web para ver y actualizar el % de avance de tus proyectos de práctica. T�
 - `app/api/projects/[id]/route.js` — actualiza el % o borra un proyecto
 - `app/api/projects/[id]/files/route.js` — sube un archivo adjunto a un proyecto
 - `app/api/projects/[id]/files/[fileId]/route.js` — borra un archivo adjunto
+- `app/api/projects/[id]/comments/route.js` — añade una nota/comentario a un proyecto
+- `app/api/projects/[id]/comments/[commentId]/route.js` — borra un comentario
 - Los datos se guardan en **Vercel KV** (una base de datos gratuita), así que persisten y las ve cualquiera que abra la URL.
 - Los archivos adjuntos se guardan en **Vercel Blob** (almacenamiento de archivos, también gratuito).
 

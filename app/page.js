@@ -9,6 +9,16 @@ function formatearTamano(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function formatearFecha(iso) {
+  return new Date(iso).toLocaleString('es-ES', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 export default function Home() {
   const [proyectos, setProyectos] = useState(null);
   const [mostrarForm, setMostrarForm] = useState(false);
@@ -16,10 +26,20 @@ export default function Home() {
   const [fechaNueva, setFechaNueva] = useState('');
   const [guardando, setGuardando] = useState(false);
   const [subiendoId, setSubiendoId] = useState(null);
+  const [autor, setAutor] = useState('');
+  const [borradores, setBorradores] = useState({});
+  const [enviandoComentarioId, setEnviandoComentarioId] = useState(null);
 
   useEffect(() => {
     cargar();
+    const guardado = localStorage.getItem('panel-proyectos-autor');
+    if (guardado) setAutor(guardado);
   }, []);
+
+  function cambiarAutor(valor) {
+    setAutor(valor);
+    localStorage.setItem('panel-proyectos-autor', valor);
+  }
 
   async function cargar() {
     const res = await fetch('/api/projects');
@@ -110,6 +130,41 @@ export default function Home() {
     await fetch(`/api/projects/${idProyecto}/files/${fileId}`, { method: 'DELETE' });
   }
 
+  async function enviarComentario(id) {
+    const texto = (borradores[id] || '').trim();
+    if (!texto) return;
+    setEnviandoComentarioId(id);
+    try {
+      const res = await fetch(`/api/projects/${id}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texto, autor }),
+      });
+      const nuevoComentario = await res.json();
+      setProyectos((actuales) =>
+        actuales.map((p) =>
+          p.id === id
+            ? { ...p, comentarios: [...(p.comentarios || []), nuevoComentario] }
+            : p
+        )
+      );
+      setBorradores((actuales) => ({ ...actuales, [id]: '' }));
+    } finally {
+      setEnviandoComentarioId(null);
+    }
+  }
+
+  async function borrarComentario(idProyecto, commentId) {
+    setProyectos((actuales) =>
+      actuales.map((p) =>
+        p.id === idProyecto
+          ? { ...p, comentarios: (p.comentarios || []).filter((c) => c.id !== commentId) }
+          : p
+      )
+    );
+    await fetch(`/api/projects/${idProyecto}/comments/${commentId}`, { method: 'DELETE' });
+  }
+
   if (proyectos === null) {
     return (
       <div className="page">
@@ -184,7 +239,9 @@ export default function Home() {
           {seccion.items.map((p) => {
             const estado = getEstado(p.porcentaje);
             const archivos = p.archivos || [];
+            const comentarios = p.comentarios || [];
             const subiendo = subiendoId === p.id;
+            const enviandoComentario = enviandoComentarioId === p.id;
             return (
               <div className="tarjeta" style={{ '--card-color': estado.color }} key={p.id}>
                 <div className="tarjeta-top">
@@ -250,6 +307,56 @@ export default function Home() {
                       }}
                     />
                   </label>
+                </div>
+
+                <div className="comentarios">
+                  {comentarios.length > 0 && (
+                    <ul className="lista-comentarios">
+                      {comentarios.map((c) => (
+                        <li key={c.id}>
+                          <div className="comentario-top">
+                            <span className="comentario-autor">{c.autor}</span>
+                            <span className="comentario-fecha">{formatearFecha(c.creadoEn)}</span>
+                            <button
+                              className="link-borrar"
+                              onClick={() => borrarComentario(p.id, c.id)}
+                            >
+                              Eliminar
+                            </button>
+                          </div>
+                          <p className="comentario-texto">{c.texto}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  <form
+                    className="form-comentario"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      enviarComentario(p.id);
+                    }}
+                  >
+                    <input
+                      type="text"
+                      className="input-autor"
+                      placeholder="Tu nombre"
+                      value={autor}
+                      onChange={(e) => cambiarAutor(e.target.value)}
+                    />
+                    <input
+                      type="text"
+                      className="input-comentario"
+                      placeholder="Escribe una nota o comentario…"
+                      value={borradores[p.id] || ''}
+                      onChange={(e) =>
+                        setBorradores((actuales) => ({ ...actuales, [p.id]: e.target.value }))
+                      }
+                    />
+                    <button className="btn btn-secondary" type="submit" disabled={enviandoComentario}>
+                      {enviandoComentario ? 'Enviando…' : 'Comentar'}
+                    </button>
+                  </form>
                 </div>
 
                 <div className="tarjeta-acciones">

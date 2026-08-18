@@ -267,6 +267,75 @@ body {
   pointer-events: none;
 }
 
+.comentarios {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.lista-comentarios {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.lista-comentarios li {
+  background: var(--surface-2);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.comentario-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.comentario-autor {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.comentario-fecha {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.comentario-top .link-borrar {
+  margin-left: auto;
+}
+
+.comentario-texto {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
+.form-comentario {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  gap: 8px;
+}
+
+.form-comentario input {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.form-comentario .btn-secondary {
+  padding: 8px 14px;
+  font-size: 13px;
+  border-radius: 8px;
+}
+
 .cargando {
   color: var(--text-dim);
   padding: 40px 0;

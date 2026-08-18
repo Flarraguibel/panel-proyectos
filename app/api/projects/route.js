@@ -28,6 +28,7 @@ export async function POST(request) {
     porcentaje: 0,
     fechaLimite: body.fechaLimite || null,
     archivos: [],
+    comentarios: [],
     actualizadoEn: new Date().toISOString(),
   };
 
