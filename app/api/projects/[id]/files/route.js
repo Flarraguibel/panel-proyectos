@@ -20,9 +20,17 @@ export async function POST(request, { params }) {
     return NextResponse.json({ error: 'Proyecto no encontrado' }, { status: 404 });
   }
 
-  const blob = await put(`${id}/${Date.now()}-${archivo.name}`, archivo, {
-    access: 'public',
-  });
+  let blob;
+  try {
+    blob = await put(`${id}/${Date.now()}-${archivo.name}`, archivo, {
+      access: 'public',
+    });
+  } catch (err) {
+    return NextResponse.json(
+      { error: `Vercel Blob: ${err instanceof Error ? err.message : 'error desconocido'}` },
+      { status: 500 }
+    );
+  }
 
   const nuevoArchivo = {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,

@@ -75,15 +75,24 @@ export default function Home() {
         method: 'POST',
         body: formData,
       });
-      if (!res.ok) throw new Error('fallo al subir');
+      if (!res.ok) {
+        let detalle = `HTTP ${res.status}`;
+        try {
+          const cuerpo = await res.json();
+          if (cuerpo?.error) detalle = cuerpo.error;
+        } catch {
+          // la respuesta no era JSON, nos quedamos con el código HTTP
+        }
+        throw new Error(detalle);
+      }
       const nuevoArchivo = await res.json();
       setProyectos((actuales) =>
         actuales.map((p) =>
           p.id === id ? { ...p, archivos: [...(p.archivos || []), nuevoArchivo] } : p
         )
       );
-    } catch {
-      alert('No se pudo subir el archivo. Inténtalo de nuevo.');
+    } catch (err) {
+      alert(`No se pudo subir el archivo: ${err.message}`);
     } finally {
       setSubiendoId(null);
     }
