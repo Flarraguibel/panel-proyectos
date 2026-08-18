@@ -207,6 +207,66 @@ body {
   padding: 20px 0;
 }
 
+.adjuntos {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.lista-adjuntos {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.lista-adjuntos li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.lista-adjuntos a {
+  color: var(--text);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lista-adjuntos a:hover {
+  text-decoration: underline;
+}
+
+.adjunto-tamano {
+  color: var(--text-dim);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.lista-adjuntos li .link-borrar {
+  margin-left: auto;
+}
+
+.btn-adjuntar {
+  display: inline-block;
+  font-size: 13px;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.btn-adjuntar:hover {
+  text-decoration: underline;
+}
+
+.btn-adjuntar.disabled {
+  color: var(--text-dim);
+  cursor: default;
+  pointer-events: none;
+}
+
 .cargando {
   color: var(--text-dim);
   padding: 40px 0;

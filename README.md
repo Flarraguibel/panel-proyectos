@@ -7,7 +7,10 @@ Panel web para ver y actualizar el % de avance de tus proyectos de práctica. T�
 - `app/page.js` — el panel (tarjetas por proyecto, agrupadas por estado según el % de avance)
 - `app/api/projects/route.js` — lista y crea proyectos
 - `app/api/projects/[id]/route.js` — actualiza el % o borra un proyecto
+- `app/api/projects/[id]/files/route.js` — sube un archivo adjunto a un proyecto
+- `app/api/projects/[id]/files/[fileId]/route.js` — borra un archivo adjunto
 - Los datos se guardan en **Vercel KV** (una base de datos gratuita), así que persisten y las ve cualquiera que abra la URL.
+- Los archivos adjuntos se guardan en **Vercel Blob** (almacenamiento de archivos, también gratuito).
 
 Estados según el % de avance:
 
@@ -31,9 +34,15 @@ Estados según el % de avance:
 
 4. Dentro del proyecto ya creado en Vercel, ve a la pestaña **Storage → Create Database → KV** (Upstash). Créala y pulsa **Connect** para conectarla a este proyecto. Esto añade automáticamente las variables `KV_REST_API_URL` y `KV_REST_API_TOKEN`.
 
-5. Ve a la pestaña **Deployments** y haz **Redeploy** del último deploy (para que recoja las nuevas variables de entorno).
+5. Para poder adjuntar archivos, ve otra vez a **Storage → Create Database** y esta vez elige **Blob**. Créala y **Connect** al proyecto (no hace falta prefijo personalizado aquí, usa el nombre por defecto `BLOB_READ_WRITE_TOKEN`).
 
-6. Listo. Vercel te da una URL tipo `https://panel-proyectos-tuusuario.vercel.app` — compártela con tu tutor. Los dos podéis entrar, mover el % de cualquier proyecto o añadir uno nuevo con el botón **+ Añadir proyecto**, y se guarda al momento para ambos.
+6. Ve a la pestaña **Deployments** y haz **Redeploy** del último deploy (para que recoja las nuevas variables de entorno de KV y de Blob).
+
+7. Listo. Vercel te da una URL tipo `https://panel-proyectos-tuusuario.vercel.app` — compártela con tu tutor. Los dos podéis entrar, mover el % de cualquier proyecto, adjuntar archivos o añadir un proyecto nuevo con el botón **+ Añadir proyecto**, y se guarda al momento para ambos.
+
+## Sobre los archivos adjuntos
+
+Se pueden subir archivos de cualquier tipo, varios por proyecto, y borrarlos cuando quieras. Un límite a tener en cuenta: al pasar por una función serverless de Vercel, cada archivo individual no puede superar unos **4.5 MB** (límite del plan gratuito). Para documentos y capturas normales es más que suficiente; si en algún momento necesitas subir archivos más grandes, dile a Claude "los archivos adjuntos son muy grandes, súbelos directo desde el navegador" y se puede migrar a subida directa sin ese límite.
 
 ## Probarlo en tu ordenador antes de subirlo (opcional)
 

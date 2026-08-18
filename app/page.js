@@ -3,12 +3,19 @@
 import { useEffect, useState } from 'react';
 import { getEstado, ORDEN_SECCIONES } from '../lib/estado';
 
+function formatearTamano(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 export default function Home() {
   const [proyectos, setProyectos] = useState(null);
   const [mostrarForm, setMostrarForm] = useState(false);
   const [nombreNuevo, setNombreNuevo] = useState('');
   const [fechaNueva, setFechaNueva] = useState('');
   const [guardando, setGuardando] = useState(false);
+  const [subiendoId, setSubiendoId] = useState(null);
 
   useEffect(() => {
     cargar();
@@ -55,6 +62,43 @@ export default function Home() {
     if (!confirm('¿Eliminar este proyecto del panel?')) return;
     setProyectos((actuales) => actuales.filter((p) => p.id !== id));
     await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+  }
+
+  async function subirArchivo(id, file) {
+    if (!file) return;
+    setSubiendoId(id);
+    const formData = new FormData();
+    formData.append('archivo', file);
+
+    try {
+      const res = await fetch(`/api/projects/${id}/files`, {
+        method: 'POST',
+        body: formData,
+      });
+      if (!res.ok) throw new Error('fallo al subir');
+      const nuevoArchivo = await res.json();
+      setProyectos((actuales) =>
+        actuales.map((p) =>
+          p.id === id ? { ...p, archivos: [...(p.archivos || []), nuevoArchivo] } : p
+        )
+      );
+    } catch {
+      alert('No se pudo subir el archivo. Inténtalo de nuevo.');
+    } finally {
+      setSubiendoId(null);
+    }
+  }
+
+  async function borrarArchivo(idProyecto, fileId) {
+    if (!confirm('¿Eliminar este archivo?')) return;
+    setProyectos((actuales) =>
+      actuales.map((p) =>
+        p.id === idProyecto
+          ? { ...p, archivos: (p.archivos || []).filter((a) => a.id !== fileId) }
+          : p
+      )
+    );
+    await fetch(`/api/projects/${idProyecto}/files/${fileId}`, { method: 'DELETE' });
   }
 
   if (proyectos === null) {
@@ -130,6 +174,8 @@ export default function Home() {
           <h2>{seccion.titulo}</h2>
           {seccion.items.map((p) => {
             const estado = getEstado(p.porcentaje);
+            const archivos = p.archivos || [];
+            const subiendo = subiendoId === p.id;
             return (
               <div className="tarjeta" style={{ '--card-color': estado.color }} key={p.id}>
                 <div className="tarjeta-top">
@@ -162,9 +208,44 @@ export default function Home() {
                   onTouchEnd={(e) => guardarPorcentaje(p.id, Number(e.target.value))}
                 />
 
+                <div className="adjuntos">
+                  {archivos.length > 0 && (
+                    <ul className="lista-adjuntos">
+                      {archivos.map((a) => (
+                        <li key={a.id}>
+                          <a href={a.url} target="_blank" rel="noopener noreferrer">
+                            📎 {a.nombre}
+                          </a>
+                          <span className="adjunto-tamano">{formatearTamano(a.tamanoBytes)}</span>
+                          <button
+                            className="link-borrar"
+                            onClick={() => borrarArchivo(p.id, a.id)}
+                          >
+                            Eliminar
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  <label className={`btn-adjuntar ${subiendo ? 'disabled' : ''}`}>
+                    {subiendo ? 'Subiendo…' : '+ Adjuntar archivo'}
+                    <input
+                      type="file"
+                      hidden
+                      disabled={subiendo}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        subirArchivo(p.id, file);
+                        e.target.value = '';
+                      }}
+                    />
+                  </label>
+                </div>
+
                 <div className="tarjeta-acciones">
                   <button className="link-borrar" onClick={() => borrarProyecto(p.id)}>
-                    Eliminar
+                    Eliminar proyecto
                   </button>
                 </div>
               </div>
