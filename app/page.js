@@ -29,6 +29,9 @@ export default function Home() {
   const [autor, setAutor] = useState('');
   const [borradores, setBorradores] = useState({});
   const [enviandoComentarioId, setEnviandoComentarioId] = useState(null);
+  const [editandoComentarioId, setEditandoComentarioId] = useState(null);
+  const [borradorEdicion, setBorradorEdicion] = useState('');
+  const [guardandoEdicionId, setGuardandoEdicionId] = useState(null);
 
   useEffect(() => {
     cargar();
@@ -163,6 +166,45 @@ export default function Home() {
       )
     );
     await fetch(`/api/projects/${idProyecto}/comments/${commentId}`, { method: 'DELETE' });
+  }
+
+  function iniciarEdicionComentario(comentario) {
+    setEditandoComentarioId(comentario.id);
+    setBorradorEdicion(comentario.texto);
+  }
+
+  function cancelarEdicionComentario() {
+    setEditandoComentarioId(null);
+    setBorradorEdicion('');
+  }
+
+  async function guardarEdicionComentario(idProyecto, commentId) {
+    const texto = borradorEdicion.trim();
+    if (!texto) return;
+    setGuardandoEdicionId(commentId);
+    try {
+      const res = await fetch(`/api/projects/${idProyecto}/comments/${commentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texto }),
+      });
+      const comentarioActualizado = await res.json();
+      setProyectos((actuales) =>
+        actuales.map((p) =>
+          p.id === idProyecto
+            ? {
+                ...p,
+                comentarios: (p.comentarios || []).map((c) =>
+                  c.id === commentId ? comentarioActualizado : c
+                ),
+              }
+            : p
+        )
+      );
+      cancelarEdicionComentario();
+    } finally {
+      setGuardandoEdicionId(null);
+    }
   }
 
   if (proyectos === null) {
@@ -312,21 +354,67 @@ export default function Home() {
                 <div className="comentarios">
                   {comentarios.length > 0 && (
                     <ul className="lista-comentarios">
-                      {comentarios.map((c) => (
-                        <li key={c.id}>
-                          <div className="comentario-top">
-                            <span className="comentario-autor">{c.autor}</span>
-                            <span className="comentario-fecha">{formatearFecha(c.creadoEn)}</span>
-                            <button
-                              className="link-borrar"
-                              onClick={() => borrarComentario(p.id, c.id)}
-                            >
-                              Eliminar
-                            </button>
-                          </div>
-                          <p className="comentario-texto">{c.texto}</p>
-                        </li>
-                      ))}
+                      {comentarios.map((c) => {
+                        const editando = editandoComentarioId === c.id;
+                        const guardandoEdicion = guardandoEdicionId === c.id;
+                        return (
+                          <li key={c.id}>
+                            <div className="comentario-top">
+                              <span className="comentario-autor">{c.autor}</span>
+                              <span className="comentario-fecha">
+                                {formatearFecha(c.creadoEn)}
+                                {c.editadoEn && ' (editado)'}
+                              </span>
+                              {!editando && (
+                                <>
+                                  <button
+                                    className="link-borrar"
+                                    onClick={() => iniciarEdicionComentario(c)}
+                                  >
+                                    Editar
+                                  </button>
+                                  <button
+                                    className="link-borrar"
+                                    onClick={() => borrarComentario(p.id, c.id)}
+                                  >
+                                    Eliminar
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                            {editando ? (
+                              <div className="edicion-comentario">
+                                <textarea
+                                  className="input-comentario"
+                                  value={borradorEdicion}
+                                  onChange={(e) => setBorradorEdicion(e.target.value)}
+                                  rows={3}
+                                  autoFocus
+                                />
+                                <div className="edicion-comentario-acciones">
+                                  <button
+                                    className="btn btn-secondary"
+                                    type="button"
+                                    disabled={guardandoEdicion}
+                                    onClick={() => guardarEdicionComentario(p.id, c.id)}
+                                  >
+                                    {guardandoEdicion ? 'Guardando…' : 'Guardar'}
+                                  </button>
+                                  <button
+                                    className="link-borrar"
+                                    type="button"
+                                    onClick={cancelarEdicionComentario}
+                                  >
+                                    Cancelar
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="comentario-texto">{c.texto}</p>
+                            )}
+                          </li>
+                        );
+                      })}
                     </ul>
                   )}
 

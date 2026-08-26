@@ -315,6 +315,35 @@ body {
   white-space: pre-wrap;
 }
 
+.edicion-comentario {
+  display: grid;
+  gap: 8px;
+}
+
+.edicion-comentario textarea.input-comentario {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.edicion-comentario-acciones {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.edicion-comentario-acciones .btn-secondary {
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: 8px;
+}
+
 .form-comentario {
   display: grid;
   grid-template-columns: 1fr 2fr auto;
