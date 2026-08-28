@@ -32,6 +32,9 @@ export default function Home() {
   const [editandoComentarioId, setEditandoComentarioId] = useState(null);
   const [borradorEdicion, setBorradorEdicion] = useState('');
   const [guardandoEdicionId, setGuardandoEdicionId] = useState(null);
+  const [editandoNombreId, setEditandoNombreId] = useState(null);
+  const [borradorNombre, setBorradorNombre] = useState('');
+  const [guardandoNombreId, setGuardandoNombreId] = useState(null);
 
   useEffect(() => {
     cargar();
@@ -62,6 +65,36 @@ export default function Home() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ porcentaje }),
     });
+  }
+
+  function iniciarEdicionNombre(p) {
+    setEditandoNombreId(p.id);
+    setBorradorNombre(p.nombre);
+  }
+
+  function cancelarEdicionNombre() {
+    setEditandoNombreId(null);
+    setBorradorNombre('');
+  }
+
+  async function guardarNombre(id) {
+    const nombre = borradorNombre.trim();
+    if (!nombre) return;
+    setGuardandoNombreId(id);
+    try {
+      const res = await fetch(`/api/projects/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre }),
+      });
+      const actualizado = await res.json();
+      setProyectos((actuales) =>
+        actuales.map((p) => (p.id === id ? { ...p, nombre: actualizado.nombre } : p))
+      );
+      cancelarEdicionNombre();
+    } finally {
+      setGuardandoNombreId(null);
+    }
   }
 
   async function añadirProyecto(e) {
@@ -284,11 +317,52 @@ export default function Home() {
             const comentarios = p.comentarios || [];
             const subiendo = subiendoId === p.id;
             const enviandoComentario = enviandoComentarioId === p.id;
+            const editandoNombre = editandoNombreId === p.id;
+            const guardandoNombre = guardandoNombreId === p.id;
             return (
               <div className="tarjeta" style={{ '--card-color': estado.color }} key={p.id}>
                 <div className="tarjeta-top">
                   <div>
-                    <p className="tarjeta-nombre">{p.nombre}</p>
+                    {editandoNombre ? (
+                      <div className="edicion-nombre">
+                        <input
+                          className="input-nombre-tarjeta"
+                          type="text"
+                          value={borradorNombre}
+                          onChange={(e) => setBorradorNombre(e.target.value)}
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') guardarNombre(p.id);
+                            if (e.key === 'Escape') cancelarEdicionNombre();
+                          }}
+                        />
+                        <div className="edicion-nombre-acciones">
+                          <button
+                            className="btn btn-secondary"
+                            type="button"
+                            disabled={guardandoNombre}
+                            onClick={() => guardarNombre(p.id)}
+                          >
+                            {guardandoNombre ? 'Guardando…' : 'Guardar'}
+                          </button>
+                          <button className="link-borrar" type="button" onClick={cancelarEdicionNombre}>
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="tarjeta-nombre">
+                        {p.nombre}
+                        <button
+                          className="btn-editar-nombre"
+                          type="button"
+                          title="Editar nombre del proyecto"
+                          onClick={() => iniciarEdicionNombre(p)}
+                        >
+                          ✏️
+                        </button>
+                      </p>
+                    )}
                     <p className="tarjeta-meta">
                       {p.fechaLimite ? `Fecha límite: ${p.fechaLimite}` : 'Sin fecha límite'}
                     </p>

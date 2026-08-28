@@ -148,6 +148,48 @@ body {
   font-size: 15px;
   font-weight: 600;
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-editar-nombre {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px;
+  opacity: 0.55;
+  line-height: 1;
+}
+.btn-editar-nombre:hover { opacity: 1; }
+
+.edicion-nombre {
+  display: grid;
+  gap: 6px;
+}
+
+.input-nombre-tarjeta {
+  font-size: 15px;
+  font-weight: 600;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  color: var(--text);
+  width: 100%;
+}
+
+.edicion-nombre-acciones {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.edicion-nombre-acciones .btn-secondary {
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: 8px;
 }
 
 .tarjeta-meta {
